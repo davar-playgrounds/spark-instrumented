@@ -1,0 +1,5 @@
+.DS_Store
+log
+data
+mock-job/target
+mock-job/project

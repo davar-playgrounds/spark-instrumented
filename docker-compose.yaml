@@ -1,0 +1,73 @@
+version: '2'
+
+services:
+
+  grafana-graphite:
+    image: kamon/grafana_graphite
+    ports:
+      - '80:80'
+      - '81:81'
+      - '8125:8125/udp'
+      - '8126:8126'
+      - '2003:2003'
+    volumes:
+      - ./data/whisper:/opt/graphite/storage/whisper
+      - ./data/grafana:/opt/grafana/data
+      - ./log/graphite:/opt/graphite/storage/log
+
+  spark-master:
+    image: p7hb/docker-spark
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+      - "6066:6066"
+    environment:
+      SPARK_MASTER_PORT: 7077
+      SPARK_DAEMON_MEMORY: 1g
+      SPARK_PUBLIC_DNS: 127.0.0.1
+    volumes:
+      - ./data/spark-events:/tmp/spark-events
+    command: spark-class org.apache.spark.deploy.master.Master
+
+  spark-worker:
+    image: p7hb/docker-spark
+    depends_on:
+      - spark-master
+      - grafana-graphite
+    links:
+      - spark-master
+      - grafana-graphite
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./data/spark-events:/tmp/spark-events
+    command: spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+
+  spark-history-server:
+    image: p7hb/docker-spark
+    depends_on:
+      - spark-master
+      - spark-worker
+    ports:
+      - "18080:18080"
+    volumes:
+      - ./data/spark-events:/tmp/spark-events
+    environment:
+      HADOOP_CONF_DIR: /tmp
+    command: spark-class org.apache.spark.deploy.history.HistoryServer
+
+  # don't start by default
+  spark-client:
+    image: p7hb/docker-spark
+    depends_on:
+      - spark-master
+    links:
+      - spark-master
+    volumes:
+      # - "./mock-job/stage:/stage"
+      - ./mock-job/target/scala-2.11:/stage
+      - ./data/spark-events:/tmp/spark-events
+    command: spark-submit --master spark://spark-master:7077 --conf spark.metrics.conf.*.sink.Graphite.class=org.apache.spark.metrics.sink.GraphiteSink --conf spark.metrics.conf.*.sink.Graphite.host=grafana-graphite --conf spark.metrics.conf.*.sink.Graphite.port=2003 --conf spark.metrics.conf.*.source.jvm.class=org.apache.spark.metrics.source.JvmSource --conf spark.metrics.namespace=mock --conf spark.eventLog.enabled=true /stage/mock-job_2.11-0.1-SNAPSHOT.jar
+      # following reaches the driver, but doesn't get propagated to executors...
+      # --files /stage/metrics.properties \
+      # --conf spark.metrics.conf=metrics.properties
