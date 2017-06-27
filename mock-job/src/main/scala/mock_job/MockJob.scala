@@ -20,7 +20,7 @@ object MockJob extends App {
     Thread.sleep(System.currentTimeMillis % 100)
 
   def maybeFail() =
-    if (System.currentTimeMillis % 11 == 0)
+    if (System.currentTimeMillis % 101 == 0)
       throw new Exception("boo!")
 }
 
