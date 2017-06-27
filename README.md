@@ -1,7 +1,8 @@
 Spark with instrumentation
 ==========================
 
-Setup:
+Initial setup
+-------------
 ```
 # docker-grafana-graphite
 git clone https://github.com/kamon-io/docker-grafana-graphite.git
@@ -23,24 +24,31 @@ Start `grafana-graphite`, `spark-master`, `spark-worker`, `spark-history-server`
 docker-compose up grafana-graphite spark-master spark-history-server spark-worker
 ```
 
-Setup grafana dashboard:
+Run mock job
+------------
+```
+docker-compose run spark-client
+```
+
+Setup grafana dashboard
+-----------------------
 ```
 open localhost:80
 # login as admin/admin
 # import spark-runtime-dashboard.json, hook it up to 'local graphite'
 ```
+![grafana](raw/docs/image/grafana.png)
 
-Run mock job:
-```
-docker-compose run spark-client
-```
-
-View Spark histopry server:
+View Spark history server
+-------------------------
 ```
 open localhost:18080
 ```
+![history-server](raw/docs/image/history-server.png)
 
-View Graphite:
+View Graphite
+-------------
 ```
 open localhost:81
 ```
+![history-server](raw/docs/image/graphite.png)
