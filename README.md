@@ -37,18 +37,18 @@ open localhost:80
 # login as admin/admin
 # import spark-runtime-dashboard.json, hook it up to 'local graphite'
 ```
-![grafana](raw/docs/image/grafana.png)
+![grafana](/raw/docs/image/grafana.png)
 
 View Spark history server
 -------------------------
 ```
 open localhost:18080
 ```
-![history-server](raw/docs/image/history-server.png)
+![history-server](/raw/docs/image/history-server.png)
 
 View Graphite
 -------------
 ```
 open localhost:81
 ```
-![history-server](raw/docs/image/graphite.png)
+![history-server](/raw/docs/image/graphite.png)
